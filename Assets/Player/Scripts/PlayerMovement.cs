@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,9 +20,19 @@ public class PlayerMovement : MonoBehaviour
     //Jump Stats
     [SerializeField] float jumpHeight = 1.5f;
 
+    //Crouch Stats
+    [SerializeField] float crouchHeight = 1f;
+    [SerializeField] float standHeight = 2f;
+    [SerializeField] float crouchSpeed = 2.5f;
+
+    //Prone Stats
+    [SerializeField] float proneSpeed = 1f;
+    [SerializeField] float proneHeight = 0.5f;
+
     //Misc
     [SerializeField] float mouseSensitivity = 2f;
     [SerializeField] float gravity = -9.81f;
+    [SerializeField] float transitionSpeed = 10f;
 
     private CharacterController controller;
     private Player movement;
@@ -31,6 +42,8 @@ public class PlayerMovement : MonoBehaviour
     private Transform cameraTransform;
     private bool isSprinting;
     private bool canSprint;
+    private bool isCrouching;
+    private bool isProne;
 
     void Awake()
     {
@@ -43,6 +56,8 @@ public class PlayerMovement : MonoBehaviour
         movement.Movement.Sprint.performed += ctx => isSprinting = ctx.ReadValueAsButton(); //Sprint input
         movement.Movement.Sprint.canceled += ctx => isSprinting = false; //Reset sprint value
         movement.Movement.Jump.performed += ctx => Jump();
+        movement.Movement.Crouch.performed += ctx => ToggleCrouch();
+        movement.Movement.Prone.performed += ctx => ToggleProne();
         movement.Enable();
 
         cameraTransform = Camera.main.transform;
@@ -57,7 +72,17 @@ public class PlayerMovement : MonoBehaviour
     {
         //Movement
         float currentSpeed = moveSpeed;
-        if (isSprinting && canSprint && stamina > 0)
+        if (isProne)
+        {
+            currentSpeed = proneSpeed;
+        }
+
+        else if (isCrouching)
+        {
+            currentSpeed = crouchSpeed;
+        }
+
+        else if (isSprinting && canSprint && stamina > 0)
         {
             currentSpeed = sprintSpeed;
             stamina -= staminaDrainRate * Time.deltaTime;
@@ -66,6 +91,7 @@ public class PlayerMovement : MonoBehaviour
                 stamina = 0;
             }
         }
+
         else
         {
             stamina += staminaRegenRate * Time.deltaTime;
@@ -112,6 +138,19 @@ public class PlayerMovement : MonoBehaviour
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
         transform.Rotate(Vector3.up * mouseX);
         cameraTransform.Rotate(Vector3.left * mouseY);
+
+        //Transitions
+        float targetHeight = standHeight;
+        if (isProne)
+        {
+            targetHeight = proneHeight;
+        }
+
+        else if (isCrouching)
+        {
+            targetHeight = crouchHeight;
+        }
+        controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * transitionSpeed);
     }
 
     void Jump()
@@ -119,6 +158,54 @@ public class PlayerMovement : MonoBehaviour
         if (controller.isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity); //Jump calculation
+        }
+    }
+
+    void ToggleCrouch()
+    {
+        //prone to crouch
+        if (isProne)
+        {
+            isProne = false;
+            isCrouching = true;
+        }
+
+        //crouch to stand
+        else if (isCrouching)
+        {
+            isCrouching = false;
+        }
+
+        //stand to crouch
+        else
+        {
+            isCrouching = true;
+        }
+
+        //isCrouching = !isCrouching;
+        //Debug.Log(isCrouching);
+    }
+
+    void ToggleProne()
+    {
+        //prone to stand
+        if (isProne)
+        {
+            isProne = false;
+        }
+
+        //crouch to prone
+        else if (isCrouching)
+        {
+            isCrouching = false;
+            isProne = true;
+        }
+
+        //stand to prone
+        else
+        {
+            isProne = true;
+            //isProne = !isProne;
         }
     }
 }

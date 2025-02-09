@@ -378,8 +378,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+  sprintSpeed: 10
+  friction: 10
+  stamina: 100
+  maxStamina: 100
+  staminaRegenRate: 5
+  staminaDrainRate: 10
+  jumpHeight: 1.5
+  crouchHeight: 1
+  standHeight: 2
+  crouchSpeed: 2.5
+  proneSpeed: 1
+  proneHeight: 0.5
   mouseSensitivity: 2
   gravity: -9.81
+  transitionSpeed: 10
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
