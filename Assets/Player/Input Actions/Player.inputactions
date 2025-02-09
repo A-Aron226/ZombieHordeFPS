@@ -1,0 +1,12 @@
+{
+    "name": "Player",
+    "maps": [
+        {
+            "name": "Movement",
+            "id": "d30183c5-53fd-495a-aa14-70b9182ba36c",
+            "actions": [],
+            "bindings": []
+        }
+    ],
+    "controlSchemes": []
+}
