@@ -1,20 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float mouseSensitivity = 2f;
-    public float gravity = -9.81f;
+    [SerializeField] float moveSpeed = 5f;
+    [SerializeField] float mouseSensitivity = 2f;
+    [SerializeField] float gravity = -9.81f;
     private CharacterController controller;
+    private Player movement;
+    private Vector2 moveInput;
+    private Vector2 lookInput;
     private Vector3 velocity;
     private Transform cameraTransform;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         controller = GetComponent<CharacterController>();
+        movement = new Player();
+
+        movement.Movement.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        movement.Movement.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
+        movement.Enable();
+
         cameraTransform = Camera.main.transform;
         cameraTransform.position = new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z);
         cameraTransform.parent = transform;
@@ -24,10 +33,13 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         //Movement
-        float moveX = Input.GetAxis("Horizontal") * moveSpeed;
+        Vector3 move = new Vector3(moveInput.x, 0, moveInput.y);
+        controller.Move(transform.TransformDirection(move) * moveSpeed * Time.deltaTime);
+
+        /*float moveX = Input.GetAxis("Horizontal") * moveSpeed;
         float moveZ = Input.GetAxis("Vertical") * moveSpeed;
         Vector3 move = transform.right * moveX + transform.forward * moveZ;
-        controller.Move(move * Time.deltaTime);
+        controller.Move(move * Time.deltaTime);*/ //Old Input system
 
         //Gravity
         if (controller.isGrounded && velocity.y < 0)
