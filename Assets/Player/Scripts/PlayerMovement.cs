@@ -44,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
     private bool canSprint;
     private bool isCrouching;
     private bool isProne;
+    private float originalCenterY;
 
     void Awake()
     {
@@ -65,6 +66,7 @@ public class PlayerMovement : MonoBehaviour
         cameraTransform.parent = transform;
 
         canSprint = true;
+        originalCenterY = controller.center.y;
     }
 
     // Update is called once per frame
@@ -141,16 +143,22 @@ public class PlayerMovement : MonoBehaviour
 
         //Transitions
         float targetHeight = standHeight;
+        float targetCenterY = originalCenterY;
         if (isProne)
         {
             targetHeight = proneHeight;
+            targetCenterY = proneHeight / 2f;
         }
 
         else if (isCrouching)
         {
             targetHeight = crouchHeight;
+            targetCenterY = crouchHeight / 2f;
         }
         controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * transitionSpeed);
+        controller.center = new Vector3(controller.center.x, Mathf.Lerp(controller.center.y, targetCenterY, Time.deltaTime * transitionSpeed), controller.center.z);
+
+        cameraTransform.localPosition = new Vector3(cameraTransform.localPosition.x, Mathf.Lerp(cameraTransform.localPosition.y, targetHeight - 0.5f, Time.deltaTime * transitionSpeed), cameraTransform.localPosition.z);
     }
 
     void Jump()
